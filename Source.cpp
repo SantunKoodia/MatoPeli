@@ -1,9 +1,41 @@
 #include <SDL.h>
 #include <iostream>
+#include <vector>
 
 //Screen dimension constants
 const int SCREEN_WIDTH = 640;
 const int SCREEN_HEIGHT = 480;
+const int BLOCK_SIZE = 10;
+
+enum DIRECTIONS {NONE, LEFT, RIGHT, UP, DOWN};
+
+class Mato{
+public:
+	int x, y, direction;
+	std::vector<int> color;
+	Mato();
+	void Move();
+};
+Mato::Mato() {
+	x = SCREEN_WIDTH / 2;
+	y = SCREEN_HEIGHT / 2;
+	color = {0, 0, 255};
+	direction = NONE;
+}
+void Mato::Move() {
+	if (direction == LEFT) {
+		x -= BLOCK_SIZE;
+	}
+	if (direction == RIGHT) {
+		x += BLOCK_SIZE;
+	}
+	if (direction == UP) {
+		y -= BLOCK_SIZE;
+	}
+	if (direction == DOWN) {
+		y += BLOCK_SIZE;
+	}
+}
 
 SDL_Window* InitWindow()
 {
@@ -31,6 +63,7 @@ SDL_Window* InitWindow()
 
 	return window;
 }
+
 
 SDL_Renderer* InitRenderer(SDL_Window* window)
 {
@@ -62,6 +95,19 @@ void Close(SDL_Window* window, SDL_Renderer* renderer)
 
 	// quit SDL subsystems
 	SDL_Quit();
+
+	std::cout << "Renderer and window freed" << std::endl;
+}
+
+
+// can render multiple renders
+void DrawSnake(SDL_Renderer* renderer, Mato mato)
+{
+	SDL_Rect fillRect = { mato.x, mato.y, BLOCK_SIZE, BLOCK_SIZE}; // X location of upper left corner, Y location of upper left corner, W width of the rectangle, H height of the rectangle
+	SDL_SetRenderDrawColor(renderer, mato.color[0], mato.color[1], mato.color[2], 255);
+	SDL_RenderFillRect(renderer, &fillRect);
+	//SDL_RenderDrawRect(renderer, &fillRect); // Outlines only
+	//SDL_RenderDrawLine(renderer, 0, SCREEN_HEIGHT / 2, SCREEN_WIDTH, SCREEN_HEIGHT / 2); // render line
 }
 
 
@@ -70,7 +116,7 @@ int main(int argc, char* args[])
 	std::cout << "Start program" << std::endl;
 
 	// SDL window that will do the rendering
-	SDL_Window* window = NULL;
+	SDL_Window* window = NULL;  
 	window = InitWindow();
 
 	// window renderer
@@ -100,31 +146,20 @@ int main(int argc, char* args[])
 			}
 
 			// code here
-			// yes
 
 			// render background 
 			SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-
 			// clear window
 			SDL_RenderClear(renderer);
 
-			// rectangle
-			SDL_Rect r; 
-			r.x = 50;
-			r.y = 50;
-			r.w = 50;
-			r.h = 50;
+			// Mato class here
+			Mato mato;
 
-			// initialize renderer color
-			SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
+			//DrawRectangle(renderer, rect);
+			DrawSnake(renderer, mato);
 
-			// Render rectangle
-			SDL_RenderFillRect(renderer, &r);
-
-			// Render the rect to the screen
+			// Render to screen
 			SDL_RenderPresent(renderer);
-
-			SDL_Delay(500);
 		}
 
 		//SDL_Event e; bool quit = false; while (quit == false) { while (SDL_PollEvent(&e)) { if (e.type == SDL_QUIT) quit = true; } }
@@ -132,6 +167,8 @@ int main(int argc, char* args[])
 
 	// free memory
 	Close(window, renderer);
+
+	std::cout << NONE << LEFT << RIGHT << UP << DOWN << "done" << std::endl;
 
 	std::cout << "End program" << std::endl;
 	return 0;
