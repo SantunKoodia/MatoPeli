@@ -1,156 +1,15 @@
 #include <SDL.h>
 #include <iostream>
 #include <vector>
-
+#include "Mato.h"
+#include "TimerFPS.h"
 
 //Screen dimension constants
 const int SCREEN_WIDTH = 640;
 const int SCREEN_HEIGHT = 480;
 const int BLOCK_SIZE = 10;
 
-enum DIRECTIONS {NONE, LEFT, RIGHT, UP, DOWN};
-
-class Mato{
-public:
-	int x, y, direction;
-	std::vector<int> color;
-	Mato();
-	void Move();
-};
-Mato::Mato() {
-	x = SCREEN_WIDTH / 2;
-	y = SCREEN_HEIGHT / 2;
-	color = {0, 0, 255};
-	direction = NONE;
-}
-void Mato::Move() {
-	if (direction == LEFT) {
-		x -= BLOCK_SIZE;
-	}
-	if (direction == RIGHT) {
-		x += BLOCK_SIZE;
-	}
-	if (direction == UP) {
-		y -= BLOCK_SIZE;
-	}
-	if (direction == DOWN) {
-		y += BLOCK_SIZE;
-	}
-}
-
-
-//The application time based timer
-class FPSTimer
-{
-	public:
-		//Initializes and functions
-		FPSTimer();
-		void Start();
-		void Stop();
-		void Pause();
-		void Unpause();
-
-		//Gets the timer's time
-		Uint32 getTicks();
-
-		//The timer status
-		bool mPaused;
-		bool mStarted;
-
-	private:
-		//The clock time when the timer started
-		Uint32 mStartTicks;
-
-		//The ticks stored when the timer was paused
-		Uint32 mPausedTicks;
-};
-
-		
-FPSTimer::FPSTimer()
-{
-	//Initialize the variables
-	mStartTicks = 0;
-	mPausedTicks = 0;
-
-	mPaused = false;
-	mStarted = false;
-}
-void FPSTimer::Start()
-{
-	//Start the timer
-	mStarted = true;
-
-	//Unpause the timer
-	mPaused = false;
-
-	//Get the current clock time
-	mStartTicks = SDL_GetTicks();
-	mPausedTicks = 0;
-}
-void FPSTimer::Stop()
-{
-	//Stop the timer
-	mStarted = false;
-
-	//Unpause the timer
-	mPaused = false;
-
-	//Clear tick variables
-	mStartTicks = 0;
-	mPausedTicks = 0;
-}
-void FPSTimer::Pause()
-{
-	//If the timer is running and isn't already paused
-	if (mStarted && !mPaused)
-	{
-		//Pause the timer
-		mPaused = true;
-
-		//Calculate the paused ticks
-		mPausedTicks = SDL_GetTicks() - mStartTicks;
-		mStartTicks = 0;
-	}
-}
-void FPSTimer::Unpause()
-{
-	//If the timer is running and paused
-	if (mStarted && mPaused)
-	{
-		//Unpause the timer
-		mPaused = false;
-
-		//Reset the starting ticks
-		mStartTicks = SDL_GetTicks() - mPausedTicks;
-
-		//Reset the paused ticks
-		mPausedTicks = 0;
-	}
-}
-Uint32 FPSTimer::getTicks()
-{
-	//The actual timer time
-	Uint32 time = 0;
-
-	//If the timer is running
-	if (mStarted)
-	{
-		//If the timer is paused
-		if (mPaused)
-		{
-			//Return the number of ticks when the timer was paused
-			time = mPausedTicks;
-		}
-		else
-		{
-			//Return the current time minus the start time
-			time = SDL_GetTicks() - mStartTicks;
-		}
-	}
-
-	return time;
-}
-
+enum DIRECTIONS {NONE = 0, LEFT = 1, RIGHT = 2, UP = 3, DOWN = 4};
 
 SDL_Window* InitWindow()
 {
@@ -243,15 +102,15 @@ int main(int argc, char* args[])
 	int ScreenTicsPerFrame = 2750 / fps; 
 
 	// Timers to calculate and cap FPS
-	FPSTimer fpsTimer;
-	FPSTimer capTimer;
+	TimerFPS fpsTimer;
+	TimerFPS capTimer;
 
 	// start counting fps
 	int frameCount = 0;
 	fpsTimer.Start();
 
 	// Init Mato class 
-	Mato mato;
+	Mato mato(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, BLOCK_SIZE);
 
 	// Check that it was succsefull
 	if (renderer != NULL)
@@ -318,7 +177,7 @@ int main(int argc, char* args[])
 			DrawSnake(renderer, mato);
 
 			// calculate and correct fps
-			float avgFps = frameCount / (fpsTimer.getTicks() / 1000.f);
+			float avgFps = frameCount / (fpsTimer.GetTicks() / 1000.f);
 			if (avgFps > 2000000) {
 				avgFps = 0;
 			}
@@ -327,7 +186,7 @@ int main(int argc, char* args[])
 			SDL_RenderPresent(renderer);
 
 			frameCount++;
-			int frameTicks = capTimer.getTicks();
+			int frameTicks = capTimer.GetTicks();
 			if (frameTicks < ScreenTicsPerFrame) {
 				// wait remaining time
 				SDL_Delay(ScreenTicsPerFrame - frameTicks);
