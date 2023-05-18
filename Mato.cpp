@@ -1,26 +1,26 @@
 #include "Mato.h"
 
-// enum values: {NONE = 0, LEFT = 1, RIGHT = 2, UP = 3, DOWN = 4};
+enum DIRECTIONS { NONE = 0, LEFT = 1, RIGHT = 2, UP = 3, DOWN = 4 };
 
 // initialize Mato class. Requires the starting X and Y positions for the snake and the size of block
-Mato::Mato(int startX, int startY, int size) {
-	blockSize = size;
+Mato::Mato(int startX, int startY, int inputSize, std::vector<int> inputColor) {
+	blockSize = inputSize;
 	x = startX;
 	y = startY;
-	color = { 0, 0, 255 };
-	direction = 0;
+	color = inputColor;
+	direction = NONE;
 }
 void Mato::Move() {
-	if (direction == 1) {
+	if (direction == LEFT) {
 		x -= blockSize;
 	}
-	if (direction == 2) {
+	if (direction == RIGHT) {
 		x += blockSize;
 	}
-	if (direction == 3) {
+	if (direction == UP) {
 		y -= blockSize;
 	}
-	if (direction == 4) {
+	if (direction == DOWN) {
 		y += blockSize;
 	}
 }

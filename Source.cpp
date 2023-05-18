@@ -3,6 +3,7 @@
 #include <vector>
 #include "Mato.h"
 #include "TimerFPS.h"
+#include "Food.h"
 
 //Screen dimension constants
 const int SCREEN_WIDTH = 640;
@@ -75,11 +76,18 @@ void Close(SDL_Window* window, SDL_Renderer* renderer)
 
 
 // can render multiple renders
-void DrawSnake(SDL_Renderer* renderer, Mato mato)
+void DrawObjects(SDL_Renderer* renderer, Mato mato, Food food)
 {
-	SDL_Rect fillRect = { mato.x, mato.y, BLOCK_SIZE, BLOCK_SIZE}; // X location of upper left corner, Y location of upper left corner, W width of the rectangle, H height of the rectangle
+	SDL_Rect foodRectangle = { food.x, food.y, BLOCK_SIZE, BLOCK_SIZE };
+	SDL_SetRenderDrawColor(renderer, food.color[0], food.color[1], food.color[2], 255);
+	SDL_RenderFillRect(renderer, &foodRectangle);
+
+	SDL_Rect matoRectangle = { mato.x, mato.y, BLOCK_SIZE, BLOCK_SIZE}; // X location of upper left corner, Y location of upper left corner, W width of the rectangle, H height of the rectangle
 	SDL_SetRenderDrawColor(renderer, mato.color[0], mato.color[1], mato.color[2], 255);
-	SDL_RenderFillRect(renderer, &fillRect);
+	SDL_RenderFillRect(renderer, &matoRectangle);
+
+	// TODO: Render tail
+
 	//SDL_RenderDrawRect(renderer, &fillRect); // Outlines only
 	//SDL_RenderDrawLine(renderer, 0, SCREEN_HEIGHT / 2, SCREEN_WIDTH, SCREEN_HEIGHT / 2); // render line
 }
@@ -110,7 +118,8 @@ int main(int argc, char* args[])
 	fpsTimer.Start();
 
 	// Init Mato class 
-	Mato mato(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, BLOCK_SIZE);
+	Mato mato(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, BLOCK_SIZE, { 0, 0, 255 });
+	Food food(BLOCK_SIZE, { 255, 0, 0 });
 
 	// Check that it was succsefull
 	if (renderer != NULL)
@@ -119,6 +128,9 @@ int main(int argc, char* args[])
 		// Initialize loop flag and event variable
 		bool run = true;
 		SDL_Event e;
+
+		// Randomize location for food
+		food.GenerateLocation(SCREEN_WIDTH, SCREEN_HEIGHT);
 
 		// while application is running
 		while (run)
@@ -142,27 +154,33 @@ int main(int argc, char* args[])
 					switch (e.key.keysym.sym) 
 					{
 						case SDLK_UP:
-							mato.direction = UP;
+							if (mato.direction != DOWN) {
+								mato.direction = UP;
+							}
 							break;
 
 						case SDLK_DOWN:
-							mato.direction = DOWN;
+							if (mato.direction != UP) {
+								mato.direction = DOWN;
+							}
 							break;
 
 						case SDLK_LEFT:
-							mato.direction = LEFT;
+							if (mato.direction != RIGHT) {
+								mato.direction = LEFT;
+							}
 							break;
 
 						case SDLK_RIGHT:
-							mato.direction = RIGHT;
+							if (mato.direction != LEFT) {
+								mato.direction = RIGHT;
+							}
 							break;
-
-						//default:
-						// code
-
 					}
 				}
 			}
+
+			// check if snake (head) is outside the window or touching food
 
 			// render background 
 			SDL_SetRenderDrawColor(renderer, 45, 180, 0, 255);
@@ -170,11 +188,10 @@ int main(int argc, char* args[])
 			SDL_RenderClear(renderer);
 
 			// Snake and Food stuff here
-
 			mato.Move();
 
 			//DrawRectangle(renderer, rect);
-			DrawSnake(renderer, mato);
+			DrawObjects(renderer, mato, food);
 
 			// calculate and correct fps
 			float avgFps = frameCount / (fpsTimer.GetTicks() / 1000.f);
