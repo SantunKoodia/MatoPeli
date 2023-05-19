@@ -92,6 +92,39 @@ void DrawObjects(SDL_Renderer* renderer, Mato mato, Food food)
 	//SDL_RenderDrawLine(renderer, 0, SCREEN_HEIGHT / 2, SCREEN_WIDTH, SCREEN_HEIGHT / 2); // render line
 }
 
+bool CheckIfColliding(int x1, int y1, int size1, int x2, int y2, int size2)
+{
+	// find center of first parameters (x1, y1 and size1)
+	int centerX = (x1 + (size1 / 2));
+	int centerY = (y1 + (size1 / 2));
+
+	// check center is inside second parameters (x2, y2 and size2)
+	if (centerX >= x2 and centerX <= x2+size2) 
+	{
+		if (centerY >= y2 and centerY <= y2 + size2)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+bool CheckIfOutsideWindow(int x, int y)
+{
+	int centerX = (x + (BLOCK_SIZE / 2));
+	int centerY = (y + (BLOCK_SIZE / 2));
+
+	if (centerX < 0 or centerX > SCREEN_WIDTH)
+	{
+		return true;
+	}
+	if (centerY < 0 or centerY > SCREEN_HEIGHT)
+	{
+		return true;
+	}
+	return false;
+}
+
 
 int main(int argc, char* args[])
 {
@@ -130,7 +163,7 @@ int main(int argc, char* args[])
 		SDL_Event e;
 
 		// Randomize location for food
-		food.GenerateLocation(SCREEN_WIDTH, SCREEN_HEIGHT);
+		food.GenerateLocation(SCREEN_WIDTH, SCREEN_HEIGHT, 0);
 
 		// while application is running
 		while (run)
@@ -181,6 +214,18 @@ int main(int argc, char* args[])
 			}
 
 			// check if snake (head) is outside the window or touching food
+			if (CheckIfColliding(mato.x, mato.y, mato.blockSize, food.x, food.y, food.blockSize))
+			{
+				food.GenerateLocation(SCREEN_WIDTH, SCREEN_HEIGHT, mato.foodEaten);
+				mato.foodEaten += 1;
+				std::cout << mato.foodEaten << std::endl;
+			}
+
+			if (CheckIfOutsideWindow(mato.x, mato.y))
+			{
+				std::cout << "Hit wall!" << std::endl;
+				run = false;
+			}
 
 			// render background 
 			SDL_SetRenderDrawColor(renderer, 45, 180, 0, 255);

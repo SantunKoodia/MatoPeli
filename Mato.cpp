@@ -8,6 +8,7 @@ Mato::Mato(int startX, int startY, int inputSize, std::vector<int> inputColor) {
 	x = startX;
 	y = startY;
 	color = inputColor;
+	foodEaten = 0;
 	direction = NONE;
 }
 void Mato::Move() {

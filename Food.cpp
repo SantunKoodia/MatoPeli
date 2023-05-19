@@ -16,12 +16,12 @@ Food::Food(int inputSize, std::vector<int> inputColor)
 	3. Multiply result of step 2 by 10. (steps 1 to 3 are done to get value divideable by block size
 	4. remove value of blockSize from the result of step 3 to not render outside the window
 */
-void Food::GenerateLocation(int windowSizeX, int windowSizeY)
+void Food::GenerateLocation(int windowSizeX, int windowSizeY, int extraInput) // extraInput will be foodEaten from snake
 {
-	srand(time(NULL)); // randomize the seed to be used in rand()
+	// generate random seed for rand() function. Change time to long int, add extraInput and multiply to generate more random result
+	srand(static_cast<long int>(time(NULL) + extraInput) * 7);
 	x = ((rand() % (windowSizeX / blockSize) + 1) * blockSize) - blockSize;
 
-	srand(time(NULL)); // randomize the seed to be used in rand()
+	srand(static_cast<long int>(time(NULL) + extraInput) * 3);
 	y = ((rand() % (windowSizeY / blockSize) + 1) * blockSize) - blockSize;
-
 }
