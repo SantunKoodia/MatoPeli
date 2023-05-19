@@ -87,7 +87,14 @@ void DrawObjects(SDL_Renderer* renderer, Mato mato, Food food)
 	SDL_RenderFillRect(renderer, &matoRectangle);
 
 	// TODO: Render tail
-
+	for (int i = 0; i < mato.foodEaten; i++)
+	{
+		//std::cout << "x: " << mato.tailX[i] << ", y: " << mato.tailY[i] << std::endl;
+		SDL_Rect tailPartRectangle = { mato.tailX[i], mato.tailY[i], BLOCK_SIZE, BLOCK_SIZE};
+		SDL_SetRenderDrawColor(renderer, mato.color[0], mato.color[1], mato.color[2], 255);
+		SDL_RenderFillRect(renderer, &tailPartRectangle);
+	}
+	
 	//SDL_RenderDrawRect(renderer, &fillRect); // Outlines only
 	//SDL_RenderDrawLine(renderer, 0, SCREEN_HEIGHT / 2, SCREEN_WIDTH, SCREEN_HEIGHT / 2); // render line
 }
@@ -218,13 +225,35 @@ int main(int argc, char* args[])
 			{
 				food.GenerateLocation(SCREEN_WIDTH, SCREEN_HEIGHT, mato.foodEaten);
 				mato.foodEaten += 1;
-				std::cout << mato.foodEaten << std::endl;
+				//std::cout << mato.foodEaten << std::endl;
 			}
 
 			if (CheckIfOutsideWindow(mato.x, mato.y))
 			{
 				std::cout << "Hit wall!" << std::endl;
 				run = false;
+			}
+
+			// add new tail piece
+			if (mato.tailX.size() < mato.foodEaten)
+			{
+				std::cout << "adding new piece" << std::endl;
+				mato.tailX.insert(mato.tailX.begin(), mato.x);
+				mato.tailY.insert(mato.tailY.begin(), mato.y);
+			}
+
+			// get the coordinates for the tail parts
+			for (int i = mato.tailX.size()-1; i >= 0; i--)
+			{
+				//std::cout << i << std::endl;
+				if (i == 0) { // place the part closest to the head onto the head
+					mato.tailX[i] = mato.x;
+					mato.tailY[i] = mato.y;
+				}
+				else { // move tail parts up
+					mato.tailX[i] = mato.tailX[i-1];
+					mato.tailY[i] = mato.tailY[i-1];
+				}
 			}
 
 			// render background 
