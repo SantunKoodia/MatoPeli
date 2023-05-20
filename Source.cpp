@@ -228,6 +228,8 @@ int main(int argc, char* args[])
 				//std::cout << mato.foodEaten << std::endl;
 			}
 
+			
+
 			if (CheckIfOutsideWindow(mato.x, mato.y))
 			{
 				std::cout << "Hit wall!" << std::endl;
@@ -253,6 +255,13 @@ int main(int argc, char* args[])
 				else { // move tail parts up
 					mato.tailX[i] = mato.tailX[i-1];
 					mato.tailY[i] = mato.tailY[i-1];
+
+					// check if snake (head) is touching its own tail
+					if (CheckIfColliding(mato.x, mato.y, mato.blockSize, mato.tailX[i], mato.tailY[i], mato.blockSize) and i > 1)
+					{
+						std::cout << "Hit tail!" << std::endl;
+						run = false;
+					}
 				}
 			}
 
