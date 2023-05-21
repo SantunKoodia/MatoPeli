@@ -78,15 +78,17 @@ void Close(SDL_Window* window, SDL_Renderer* renderer)
 // can render multiple renders
 void DrawObjects(SDL_Renderer* renderer, Mato mato, Food food)
 {
+	// create render for food
 	SDL_Rect foodRectangle = { food.x, food.y, BLOCK_SIZE, BLOCK_SIZE };
 	SDL_SetRenderDrawColor(renderer, food.color[0], food.color[1], food.color[2], 255);
 	SDL_RenderFillRect(renderer, &foodRectangle);
 
+	// create render for the snake (mato)
 	SDL_Rect matoRectangle = { mato.x, mato.y, BLOCK_SIZE, BLOCK_SIZE}; // X location of upper left corner, Y location of upper left corner, W width of the rectangle, H height of the rectangle
 	SDL_SetRenderDrawColor(renderer, mato.color[0], mato.color[1], mato.color[2], 255);
 	SDL_RenderFillRect(renderer, &matoRectangle);
 
-	// TODO: Render tail
+	// render tail
 	for (int i = 0; i < mato.foodEaten; i++)
 	{
 		//std::cout << "x: " << mato.tailX[i] << ", y: " << mato.tailY[i] << std::endl;
@@ -94,9 +96,6 @@ void DrawObjects(SDL_Renderer* renderer, Mato mato, Food food)
 		SDL_SetRenderDrawColor(renderer, mato.color[0], mato.color[1], mato.color[2], 255);
 		SDL_RenderFillRect(renderer, &tailPartRectangle);
 	}
-	
-	//SDL_RenderDrawRect(renderer, &fillRect); // Outlines only
-	//SDL_RenderDrawLine(renderer, 0, SCREEN_HEIGHT / 2, SCREEN_WIDTH, SCREEN_HEIGHT / 2); // render line
 }
 
 bool CheckIfColliding(int x1, int y1, int size1, int x2, int y2, int size2)
@@ -116,11 +115,14 @@ bool CheckIfColliding(int x1, int y1, int size1, int x2, int y2, int size2)
 	return false;
 }
 
+// checks if the snake head is outside the rendered window
 bool CheckIfOutsideWindow(int x, int y)
 {
+	// get center point for the head
 	int centerX = (x + (BLOCK_SIZE / 2));
 	int centerY = (y + (BLOCK_SIZE / 2));
 
+	// check that its not outside the screen
 	if (centerX < 0 or centerX > SCREEN_WIDTH)
 	{
 		return true;
@@ -225,6 +227,7 @@ int main(int argc, char* args[])
 								food.GenerateLocation(SCREEN_WIDTH, SCREEN_HEIGHT, 0);
 								mato.ResetWorm(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2);
 								stopped = false;
+								continue;
 							}
 						case SDLK_q:
 							// stopping game
@@ -237,7 +240,7 @@ int main(int argc, char* args[])
 			if (!stopped)
 			{
 
-				// check if snake (head) is outside the window or touching food
+				// check if snake (head) is touching food
 				if (CheckIfColliding(mato.x, mato.y, mato.blockSize, food.x, food.y, food.blockSize))
 				{
 					food.GenerateLocation(SCREEN_WIDTH, SCREEN_HEIGHT, mato.foodEaten);
@@ -245,8 +248,7 @@ int main(int argc, char* args[])
 					std::cout << "Food eaten: " << mato.foodEaten << std::endl;
 				}
 
-
-
+				// check if snake (head) is outside the window
 				if (CheckIfOutsideWindow(mato.x, mato.y))
 				{
 					std::cout << "Hit wall! Press r to restart" << std::endl;
@@ -311,14 +313,10 @@ int main(int argc, char* args[])
 				SDL_Delay(ScreenTicsPerFrame - frameTicks);
 			}
 		}
-
-		//SDL_Event e; bool quit = false; while (quit == false) { while (SDL_PollEvent(&e)) { if (e.type == SDL_QUIT) quit = true; } }
 	}
 
 	// free memory
 	Close(window, renderer);
-
-	//std::cout << NONE << LEFT << RIGHT << UP << DOWN << "done" << std::endl;
 
 	std::cout << "End program" << std::endl;
 	return 0;
