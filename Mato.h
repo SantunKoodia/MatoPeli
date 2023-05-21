@@ -10,4 +10,5 @@ public:
 	Mato(int startX, int startY, int inputSize, std::vector<int> inputColor);
 	void Move();
 	int blockSize;
+	void ResetWorm(int startX, int startY);
 };

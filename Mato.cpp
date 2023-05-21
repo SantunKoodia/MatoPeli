@@ -25,3 +25,11 @@ void Mato::Move() {
 		y += blockSize;
 	}
 }
+void Mato::ResetWorm(int startX, int startY) {
+	x = startX;
+	y = startY;
+	foodEaten = 0;
+	direction = NONE;
+	tailX.clear();
+	tailY.clear();
+}

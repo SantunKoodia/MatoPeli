@@ -166,7 +166,7 @@ int main(int argc, char* args[])
 	{
 
 		// Initialize loop flag and event variable
-		bool run = true;
+		bool run = true, stopped = false;
 		SDL_Event e;
 
 		// Randomize location for food
@@ -216,74 +216,93 @@ int main(int argc, char* args[])
 								mato.direction = RIGHT;
 							}
 							break;
+
+						case SDLK_r:
+							// check that the game has stopped before resetting
+							if (stopped)
+							{
+								// reset the game
+								food.GenerateLocation(SCREEN_WIDTH, SCREEN_HEIGHT, 0);
+								mato.ResetWorm(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2);
+								stopped = false;
+							}
+						case SDLK_q:
+							// stopping game
+							run = false;
+							break;
 					}
 				}
 			}
 
-			// check if snake (head) is outside the window or touching food
-			if (CheckIfColliding(mato.x, mato.y, mato.blockSize, food.x, food.y, food.blockSize))
+			if (!stopped)
 			{
-				food.GenerateLocation(SCREEN_WIDTH, SCREEN_HEIGHT, mato.foodEaten);
-				mato.foodEaten += 1;
-				//std::cout << mato.foodEaten << std::endl;
-			}
 
-			
-
-			if (CheckIfOutsideWindow(mato.x, mato.y))
-			{
-				std::cout << "Hit wall!" << std::endl;
-				run = false;
-			}
-
-			// add new tail piece
-			if (mato.tailX.size() < mato.foodEaten)
-			{
-				std::cout << "adding new piece" << std::endl;
-				mato.tailX.insert(mato.tailX.begin(), mato.x);
-				mato.tailY.insert(mato.tailY.begin(), mato.y);
-			}
-
-			// get the coordinates for the tail parts
-			for (int i = mato.tailX.size()-1; i >= 0; i--)
-			{
-				//std::cout << i << std::endl;
-				if (i == 0) { // place the part closest to the head onto the head
-					mato.tailX[i] = mato.x;
-					mato.tailY[i] = mato.y;
+				// check if snake (head) is outside the window or touching food
+				if (CheckIfColliding(mato.x, mato.y, mato.blockSize, food.x, food.y, food.blockSize))
+				{
+					food.GenerateLocation(SCREEN_WIDTH, SCREEN_HEIGHT, mato.foodEaten);
+					mato.foodEaten += 1;
+					std::cout << "Food eaten: " << mato.foodEaten << std::endl;
 				}
-				else { // move tail parts up
-					mato.tailX[i] = mato.tailX[i-1];
-					mato.tailY[i] = mato.tailY[i-1];
 
-					// check if snake (head) is touching its own tail
-					if (CheckIfColliding(mato.x, mato.y, mato.blockSize, mato.tailX[i], mato.tailY[i], mato.blockSize) and i > 1)
-					{
-						std::cout << "Hit tail!" << std::endl;
-						run = false;
+
+
+				if (CheckIfOutsideWindow(mato.x, mato.y))
+				{
+					std::cout << "Hit wall! Press r to restart" << std::endl;
+					stopped = true;
+				}
+
+				// add new tail piece
+				if (mato.tailX.size() < mato.foodEaten)
+				{
+					//std::cout << "adding new piece" << std::endl;
+					mato.tailX.insert(mato.tailX.begin(), mato.x);
+					mato.tailY.insert(mato.tailY.begin(), mato.y);
+				}
+
+				// get the coordinates for the tail parts
+				for (int i = mato.tailX.size() - 1; i >= 0; i--)
+				{
+					//std::cout << i << std::endl;
+					if (i == 0) { // place the part closest to the head onto the head
+						mato.tailX[i] = mato.x;
+						mato.tailY[i] = mato.y;
+					}
+					else { // move tail parts up
+						mato.tailX[i] = mato.tailX[i - 1];
+						mato.tailY[i] = mato.tailY[i - 1];
+
+						// check if snake (head) is touching its own tail
+						if (CheckIfColliding(mato.x, mato.y, mato.blockSize, mato.tailX[i], mato.tailY[i], mato.blockSize) and i > 1)
+						{
+							std::cout << "Hit tail!" << std::endl;
+							stopped = true;
+						}
 					}
 				}
+
+				// render background 
+				SDL_SetRenderDrawColor(renderer, 45, 180, 0, 255);
+				// clear window
+				SDL_RenderClear(renderer);
+
+				// Snake and Food stuff here
+				mato.Move();
+
+				//DrawRectangle(renderer, rect);
+				DrawObjects(renderer, mato, food);
+
+				// Render to screen
+				SDL_RenderPresent(renderer);
+
 			}
-
-			// render background 
-			SDL_SetRenderDrawColor(renderer, 45, 180, 0, 255);
-			// clear window
-			SDL_RenderClear(renderer);
-
-			// Snake and Food stuff here
-			mato.Move();
-
-			//DrawRectangle(renderer, rect);
-			DrawObjects(renderer, mato, food);
 
 			// calculate and correct fps
 			float avgFps = frameCount / (fpsTimer.GetTicks() / 1000.f);
 			if (avgFps > 2000000) {
 				avgFps = 0;
 			}
-
-			// Render to screen
-			SDL_RenderPresent(renderer);
 
 			frameCount++;
 			int frameTicks = capTimer.GetTicks();
